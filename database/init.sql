@@ -5,138 +5,180 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     city VARCHAR(100),
     profile_image TEXT,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE place_types (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    color VARCHAR(50),
-    icon VARCHAR(100),
-    description TEXT
-
-
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_users_email UNIQUE (LOWER(email))
 );
 
 CREATE TABLE user_preferences (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    place_type_id INT NOT NULL REFERENCES place_types(id) ON DELETE CASCADE,
-    interest_level INT,
-    max_budget DECIMAL(10,2),
-    preferred_transport VARCHAR(100),
-    likes_outdoor BOOLEAN DEFAULT FALSE
-
+    id                  SERIAL          PRIMARY KEY,
+    user_id             INT             NOT NULL,
+    place_type_id       INT             NOT NULL,
+    interest_level      INT             CHECK (interest_level BETWEEN 1 AND 5),
+    max_budget          NUMERIC(10,2)   CHECK (max_budget >= 0),
+    preferred_transport VARCHAR(50),
+    likes_outdoor       BOOLEAN         NOT NULL DEFAULT FALSE,
+ 
+    CONSTRAINT fk_upref_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_upref_place_type
+        FOREIGN KEY (place_type_id)
+        REFERENCES place_types (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT uq_upref_user_place UNIQUE (user_id, place_type_id)
 );
 
 CREATE TABLE groups (
-    id SERIAL PRIMARY KEY,
-    creator_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(150) NOT NULL,
+    id          SERIAL          PRIMARY KEY,
+    creator_id  INT             NOT NULL,
+    name        VARCHAR(100)    NOT NULL,
     description TEXT,
-    privacy VARCHAR(50),
-    status VARCHAR(50),
-    created_at TIMESTAMP DEFAULT NOW()
-
+    privacy     VARCHAR(20)     NOT NULL DEFAULT 'PUBLIC'
+                    CHECK (privacy IN ('PUBLIC', 'PRIVATE')),
+    status      VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE'
+                    CHECK (status IN ('ACTIVE', 'ARCHIVED', 'DELETED')),
+    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
+ 
+    CONSTRAINT fk_group_creator
+        FOREIGN KEY (creator_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE TABLE group_members (
-    id SERIAL PRIMARY KEY,
-    group_id INT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role VARCHAR(50),
-    status VARCHAR(50),
-    joined_at TIMESTAMP DEFAULT NOW()
+    id          SERIAL          PRIMARY KEY,
+    group_id    INT             NOT NULL,
+    user_id     INT             NOT NULL,
+    role        VARCHAR(20)     NOT NULL DEFAULT 'MEMBER'
+                    CHECK (role IN ('ADMIN', 'MEMBER')),
+    status      VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE'
+                    CHECK (status IN ('ACTIVE', 'INACTIVE', 'BANNED')),
+    joined_at   TIMESTAMP       NOT NULL DEFAULT NOW(),
+ 
+    CONSTRAINT fk_gmember_group
+        FOREIGN KEY (group_id)
+        REFERENCES groups (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_gmember_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT uq_gmember_group_user UNIQUE (group_id, user_id)
 );
 
 CREATE TABLE group_invitations (
-    id SERIAL PRIMARY KEY,
-    group_id INT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-    sender_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    receiver_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status VARCHAR(50),
-    sent_at TIMESTAMP DEFAULT NOW(),
-    responded_at TIMESTAMP
-
+    id              SERIAL      PRIMARY KEY,
+    group_id        INT         NOT NULL,
+    sender_id       INT         NOT NULL,
+    receiver_id     INT         NOT NULL,
+    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+                        CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'CANCELLED')),
+    sent_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
+    responded_at    TIMESTAMP,
+ 
+    CONSTRAINT fk_ginv_group
+        FOREIGN KEY (group_id)
+        REFERENCES groups (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_ginv_sender
+        FOREIGN KEY (sender_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_ginv_receiver
+        FOREIGN KEY (receiver_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT uq_ginv_pending UNIQUE (group_id, receiver_id, status)
 );
 
 CREATE TABLE events (
-    id SERIAL PRIMARY KEY,
-    place_type_id INT REFERENCES place_types(id),
-    title VARCHAR(200) NOT NULL,
-    description TEXT,
-    location_name VARCHAR(200),
-    address TEXT,
-    city VARCHAR(100),
-    event_date TIMESTAMP,
-    price DECIMAL(10,2),
-    weather_sensitive BOOLEAN DEFAULT FALSE,
-    event_status VARCHAR(50),
-    image_url TEXT,
-    official_url TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+    id                  SERIAL          PRIMARY KEY,
+    place_type_id       INT             NOT NULL,
+    title               VARCHAR(150)    NOT NULL,
+    description         TEXT,
+    location_name       VARCHAR(150),
+    address             TEXT,
+    city                VARCHAR(100),
+    event_date          TIMESTAMP,
+    price               NUMERIC(10,2)   CHECK (price >= 0),
+    weather_sensitive   BOOLEAN         NOT NULL DEFAULT FALSE,
+    event_status        VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE'
+                            CHECK (event_status IN ('ACTIVE', 'CANCELLED', 'COMPLETED')),
+    image_url           TEXT,
+    official_url        TEXT,
+    created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
+ 
+    CONSTRAINT fk_event_place_type
+        FOREIGN KEY (place_type_id)
+        REFERENCES place_types (id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE TABLE proposals (
-    id SERIAL PRIMARY KEY,
-    group_id INT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-    event_id INT REFERENCES events(id) ON DELETE SET NULL,
-    creator_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title VARCHAR(200) NOT NULL,
-    comment TEXT,
-    meeting_point VARCHAR(200),
-    transport_method VARCHAR(100),
-    estimated_cost DECIMAL(10,2),
-    proposed_datetime TIMESTAMP,
-    voting_deadline TIMESTAMP,
-    status VARCHAR(50),
-    has_alternative_plan BOOLEAN DEFAULT FALSE,
-    alternative_plan TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-
+    id                      SERIAL          PRIMARY KEY,
+    group_id                INT             NOT NULL,
+    event_id                INT             NOT NULL,
+    creator_id              INT             NOT NULL,
+    title                   VARCHAR(150)    NOT NULL,
+    comment                 TEXT,
+    meeting_point           VARCHAR(200),
+    transport_method        VARCHAR(50),
+    estimated_cost          NUMERIC(10,2)   CHECK (estimated_cost >= 0),
+    proposed_datetime       TIMESTAMP,
+    voting_deadline         TIMESTAMP,
+    status                  VARCHAR(20)     NOT NULL DEFAULT 'OPEN'
+                                CHECK (status IN ('OPEN', 'APPROVED', 'REJECTED', 'CANCELLED')),
+    has_alternative_plan    BOOLEAN         NOT NULL DEFAULT FALSE,
+    alternative_plan        TEXT,
+    created_at              TIMESTAMP       NOT NULL DEFAULT NOW(),
+ 
+    CONSTRAINT chk_proposal_dates
+        CHECK (voting_deadline IS NULL OR proposed_datetime IS NULL
+               OR voting_deadline < proposed_datetime),
+ 
+    CONSTRAINT fk_proposal_group
+        FOREIGN KEY (group_id)
+        REFERENCES groups (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_proposal_event
+        FOREIGN KEY (event_id)
+        REFERENCES events (id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+ 
+    CONSTRAINT fk_proposal_creator
+        FOREIGN KEY (creator_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 CREATE TABLE proposal_votes (
-    id SERIAL PRIMARY KEY,
-    proposal_id INT NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    vote VARCHAR(20),
-    comment TEXT,
-    voted_at TIMESTAMP DEFAULT NOW()
-
-);
-
-
-
-CREATE TABLE weather_checks (
-    id SERIAL PRIMARY KEY,
-    proposal_id INT NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
-    weather_status VARCHAR(50),
-    rain_probability INT,
-    temperature VARCHAR(50),
-    risk_level VARCHAR(50),
-    should_cancel BOOLEAN DEFAULT FALSE,
-    checked_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE proposal_changes (
-    id SERIAL PRIMARY KEY,
-    proposal_id INT NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    change_type VARCHAR(100),
-    description TEXT,
-    status VARCHAR(50),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-
-CREATE TABLE notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    proposal_id INT REFERENCES proposals(id) ON DELETE CASCADE,
-    title VARCHAR(200),
-    message TEXT,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW()
+    id          SERIAL      PRIMARY KEY,
+    proposal_id INT         NOT NULL,
+    user_id     INT         NOT NULL,
+    vote        VARCHAR(20) NOT NULL
+                    CHECK (vote IN ('YES', 'NO', 'MAYBE')),
+    comment     TEXT,
+    voted_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
+ 
+    CONSTRAINT fk_pvote_proposal
+        FOREIGN KEY (proposal_id)
+        REFERENCES proposals (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+ 
+    CONSTRAINT fk_pvote_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+        
+    CONSTRAINT uq_pvote_proposal_user UNIQUE (proposal_id, user_id)
 );
