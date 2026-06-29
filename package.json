@@ -1,0 +1,26 @@
+{
+  "name": "commonground",
+  "version": "1.0.0",
+  "description": "<img width=\"638\" height=\"511\" alt=\"CG_LOGO\" src=\"https://github.com/user-attachments/assets/6f9a74dd-f8ff-4149-a88e-c7ccc10b1a2b\" />",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CGCommonGround/CommonGroundApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CGCommonGround/CommonGroundApp/issues"
+  },
+  "homepage": "https://github.com/CGCommonGround/CommonGroundApp#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.22.0"
+  }
+}

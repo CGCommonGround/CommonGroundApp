@@ -1,5 +1,8 @@
+DROP eschema application if EXISTS CASCADE;
+CREATE eschema application;
+
 -- =========================================
--- CLEANUP (optional for development)
+-- CLEANUP 
 -- =========================================
 
 DROP TABLE IF EXISTS proposal_votes CASCADE;
