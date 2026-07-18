@@ -1,2 +1,6 @@
 node_modules/
 .env
+
+cg-front/node_modules/
+cg-front/dist/
+cg-front/.env
