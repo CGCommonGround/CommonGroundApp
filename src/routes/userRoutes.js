@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { 
+  registerUser, 
+  loginUser, 
+  getUserPreferences, 
+  updateUserPreferences 
+} = require('../controllers/userController');
 
-router.post('/register', (req, res) => res.json({ message: 'Register user placeholder' }));
-
-router.post('/login', (req, res) => res.json({ message: 'Login user placeholder' }));
-
-router.get('/:id/preferences', (req, res) => res.json({ message: 'Get preferences placeholder' }));
-
-router.put('/:id/preferences', (req, res) => res.json({ message: 'Update preferences placeholder' }));
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.get('/:id/preferences', getUserPreferences);
+router.put('/:id/preferences', updateUserPreferences);
 
 module.exports = router;

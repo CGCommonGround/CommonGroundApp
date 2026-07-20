@@ -1,5 +1,5 @@
-DROP eschema application if EXISTS CASCADE;
-CREATE eschema application;
+DROP SCHEMA IF EXISTS application CASCADE;
+CREATE SCHEMA IF NOT EXISTS application;
 
 -- =========================================
 -- CLEANUP 
