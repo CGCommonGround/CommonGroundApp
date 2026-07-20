@@ -2,9 +2,11 @@
   "name": "commonground",
   "version": "1.0.0",
   "description": "<img width=\"638\" height=\"511\" alt=\"CG_LOGO\" src=\"https://github.com/user-attachments/assets/6f9a74dd-f8ff-4149-a88e-c7ccc10b1a2b\" />",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon"
   },
   "repository": {
     "type": "git",
@@ -22,5 +24,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
