@@ -1,5 +1,11 @@
-export default function Home() {
+import HeroSection from "../components/Hero";
+import HowToUse from "../components/HowToUse";
+
+export default function LandingPage() {
   return (
-    <h1 className="text-3xl font-bold underline bg-amber-400">Hello world!</h1>
+    <div className="bg-white text-slate-800 font-sans">
+      <HeroSection />
+      <HowToUse />
+    </div>
   );
 }
