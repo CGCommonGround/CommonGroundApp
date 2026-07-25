@@ -18,7 +18,8 @@ export default function HeroSection() {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight mb-6 leading-tight">
-          Find Your <span className="bg-linear-to-r from-emerald-600 via-blue-600 to-orange-500 bg-clip-text text-transparent">Common Ground</span> in the City.
+          Find Your 
+          <span className="bg-linear-to-r from-emerald-600 via-blue-600 to-orange-500 bg-clip-text text-transparent">Common Ground</span> in the City.
         </h1>
         
         <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-normal">

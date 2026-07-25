@@ -1,59 +1,82 @@
 const db = require('../config/db');
 
-const registerUser = async(req, res)=>{
-    const {name, email, password, city} = req.body;
+const registerUser = async (req, res) => {
+  const { name, email, password, city } = req.body;
 
-    if(!name || !email || !password){
-        return res.status(400).json({message: "Missing required fields"});
-    }
-    try{
-        const checkUser = await db.query(
-            'SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]
-        );
-        if(checkUser.rows.length > 0){
-            return res.status(400).json({
-                message: "Email already exists"
-            });
-        }
-        const insertQuery = `
-        INSERT INTO users (name, email, password_hash, city)
-        VALUES($1, $2, $3, $4) RETURNING id, name, email, city, created_at`;
-        const result = await db.query(insertQuery, [name,email,password,city || null]);
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
 
-        res.status(201).json({
-            message: "User registered successfully", user: result.rows[0]
-        });
-    } catch(error){
-        console.error(error);
-        res.status(500).json({message: "Server Error"});
+  try {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    const checkUser = await db.query(
+      'SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [cleanEmail]
+    );
+
+    if (checkUser.rows.length > 0) {
+      return res.status(400).json({
+        message: "Email already exists"
+      });
     }
+
+    const insertQuery = `
+      INSERT INTO users (name, email, password, city)
+      VALUES($1, $2, $3, $4) 
+      RETURNING id, name, email, city, created_at
+    `;
+    
+    const result = await db.query(insertQuery, [
+      name.trim(), 
+      cleanEmail, 
+      cleanPassword, 
+      city ? city.trim() : null
+    ]);
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: result.rows[0]
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
 
-// login
-const loginUser = async (req,res)=>{
-    const {email, password} = req.body;
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
 
-    if(!email || !password){
-        return res.status(400).json({message: "email and password are required"});
-    }
-    try{
-        const query = 'SELECT id, name, email,password_hash FROM users WHERE LOWER(email) = LOWER($1)';
-        const result = await db.query(query, [email]);
+  if (!email || !password) {
+    return res.status(400).json({ message: "email and password are required" });
+  }
 
-        if (result.rows.length === 0 || result.rows[0].password_hash !== password) {
-          return res.status(401).json({ message: 'Invalid credentials' });
+  try {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    const query = 'SELECT id, name, email, password FROM users WHERE LOWER(email) = LOWER($1)';
+    const result = await db.query(query, [cleanEmail]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
+
     const user = result.rows[0];
+
+    if (user.password !== cleanPassword) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     res.status(200).json({
       message: 'Login successful',
       user: { id: user.id, name: user.name, email: user.email }
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login Error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 const getUserPreferences = async (req, res) => {
   const { id } = req.params;
@@ -75,10 +98,8 @@ const getUserPreferences = async (req, res) => {
 
     res.status(200).json({ userId: id, preferences: result.rows });
   } catch (error) {
-    console.error(error);
+    console.error("Get Preferences Error:", error);
     res.status(500).json({ message: 'Server error' });
-
-
   }
 };
 
@@ -121,7 +142,7 @@ const updateUserPreferences = async (req, res) => {
 
     res.status(200).json({ message: 'Preferences updated successfully', data: result.rows[0] });
   } catch (error) {
-    console.error(error);
+    console.error("Update Preferences Error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 };

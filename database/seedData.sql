@@ -14,12 +14,12 @@ INSERT INTO place_types (name, description) VALUES
 -- SEED DATA: USERS
 -- =========================================
 -- Passwords are simulated with a generic hash for development purposes
-INSERT INTO users (name, email, password_hash, city) VALUES
-('Ivo', 'ivo@commonground.local', '$2a$10$rX.vG...', 'Barcelona'),
-('Carla', 'carla@commonground.local', '$2a$10$rX.vG...', 'Barcelona'),
-('Marc', 'marc@commonground.local', '$2a$10$rX.vG...', 'Barcelona'),
-('Sofía', 'sofia@commonground.local', '$2a$10$rX.vG...', 'Barcelona'),
-('Lucas', 'lucas@commonground.local', '$2a$10$rX.vG...', 'Girona');
+INSERT INTO users (name, email, password, city) VALUES
+('Ana', 'ana@commonground.local', 'admin123', 'Barcelona'),
+('David', 'david@commonground.local', 'admin123', 'Madrid'),
+('Lola', 'lola@commonground.local', 'admin123', 'Valencia'),
+('Lucas', 'lucas@commonground.local', 'admin123', 'Sevilla'),
+('Suraya', 'suraya@commonground.local', 'admin123', 'Girona');
 
 -- =========================================
 -- SEED DATA: USER PREFERENCES
