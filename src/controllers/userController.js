@@ -77,7 +77,40 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+const getUserProfile = async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const userQuery = 'SELECT id, name, email, city, profile_image, created_at FROM users WHERE id = $1';
+    const userResult = await db.query(userQuery, [id]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const prefQuery = `
+      SELECT 
+        up.id AS preference_id,
+        pt.name AS category,
+        up.interest_level,
+        up.max_budget,
+        up.preferred_transport,
+        up.likes_outdoor
+      FROM user_preferences up
+      JOIN place_types pt ON up.place_type_id = pt.id
+      WHERE up.user_id = $1
+    `;
+    const prefResult = await db.query(prefQuery, [id]);
+
+    res.status(200).json({
+      user: userResult.rows[0],
+      preferences: prefResult.rows
+    });
+  } catch (error) {
+    console.error('Get Profile Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 const getUserPreferences = async (req, res) => {
   const { id } = req.params;
 
@@ -147,9 +180,37 @@ const updateUserPreferences = async (req, res) => {
   }
 };
 
+const getUserGroups = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const query = `
+      SELECT 
+        g.id,
+        g.name,
+        g.description,
+        g.privacy,
+        gm.role,
+        g.created_at
+      FROM group_members gm
+      JOIN groups g ON gm.group_id = g.id
+      WHERE gm.user_id = $1 AND gm.status = 'ACTIVE'
+      ORDER BY g.created_at DESC
+    `;
+    const result = await db.query(query, [id]);
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error fetching user groups:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserPreferences,
-  updateUserPreferences
+  updateUserPreferences,
+  getUserProfile,
+  getUserGroups
 };

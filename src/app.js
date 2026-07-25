@@ -1,5 +1,3 @@
-// src/app.js
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -11,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/v1/users', require('./routes/userRoutes'));
-//app.use('/api/v1/groups', require('./routes/groupRoutes'));
+app.use('/api/v1/groups', require('./routes/groupRoute'));
 //app.use('/api/v1/events', require('./routes/eventRoutes'));
 //app.use('/api/v1/proposals', require('./routes/proposalRoutes'));
 
