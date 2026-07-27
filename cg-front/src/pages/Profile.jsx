@@ -11,7 +11,7 @@ export default function ProfilePage() {
   });
 
   const [preferences, setPreferences] = useState([]);
-  const [groups, setGroups] = useState([]); // 💡 Track user's groups
+  const [groups, setGroups] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +20,6 @@ export default function ProfilePage() {
       return;
     }
 
-    // Fetch user profile preferences AND user groups simultaneously
     Promise.all([
       axios.get(`http://localhost:3000/api/v1/users/${user.id}/profile`),
       axios.get(`http://localhost:3000/api/v1/users/${user.id}/groups`)
@@ -106,8 +105,6 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-
-      {/* Preferences Section */}
       <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
         <h2 className="text-lg font-bold text-slate-900 mb-4">Your Preferences</h2>
         {loading ? (

@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default function CreatePage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('group'); // 'group' or 'proposal'
+  const [activeTab, setActiveTab] = useState('group'); 
 
   // Group Form State
   const [groupName, setGroupName] = useState('');

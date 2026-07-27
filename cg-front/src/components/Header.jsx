@@ -44,8 +44,6 @@ export default function Header() {
               className="h-10 w-auto object-contain" 
             />
           </Link>
-
-          {/* Nav items */}
           <nav className="hidden md:flex items-center space-x-8 font-medium text-slate-600 text-sm">
             <Link to="/" className="hover:text-slate-900 transition">
               Explore Events
